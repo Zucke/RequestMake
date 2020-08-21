@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://CodeEditor.gd" type="Script" id=1]
+
+[node name="CodeEditor" type="TextEdit"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+highlight_current_line = true
+syntax_highlighting = true
+show_line_numbers = true
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+strings_color = Color( 0.25098, 0.741176, 0.0235294, 1 )
+bool_color = Color( 0.12549, 0.482353, 0.635294, 1 )
+[connection signal="text_changed" from="." to="." method="_on_CodeEditor_text_changed"]
