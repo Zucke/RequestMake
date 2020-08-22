@@ -1,17 +1,20 @@
 extends Node
-onready var url = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer/Url
+onready var url = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer/URLHistory/Url
+onready var url_history = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer/URLHistory
 onready var method = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer/Method
 onready var json_body = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer2/VBoxContainer2/JsonBody
 onready var header = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer2/VBoxContainer2/Header
 onready var authorization = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer2/VBoxContainer2/Authorization
 onready var request_info = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer2/VBoxContainer/RequestInfo
 onready var send_socket_button = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer2/VBoxContainer2/JsonBody/SendToSockeyButton
+onready var send_button = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer/SendButton
 onready var use_websockets = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer/Websocket
 onready var connection_message = $UI/Panel/MarginContainer/VBoxContainer/HBoxContainer2/VBoxContainer/RequestInfo/ConectingMessage
 
 var last_body_text = ""
 var saved_request_info = {
     url="",
+    url_history = [],
     method=0,
     json_body="",
     header="",
@@ -98,7 +101,9 @@ func _on_SendButton_pressed():
     saved_request_info.json_body = json_body.text
 
     saved_request_info.method = method.get_selected_id()
-    saved_request_info.header =  header.text
+    saved_request_info.header =  header.text    
+    if not saved_request_info.url in saved_request_info.url_history:
+        saved_request_info.url_history.append(saved_request_info.url)        
     saved_request_info.url = url.text
     saved_request_info.autorization = authorization.text
     save_last_request()
@@ -181,3 +186,30 @@ func clean_and_to_json(string:String):
     result.result
     return JSON.print(result.result)
     
+
+
+func _on_Url_text_entered(new_text):
+    send_button.grab_focus()
+    send_button.emit_signal("pressed")
+
+
+func _on_Url_text_changed(new_text):
+    var pop = url_history.get_popup()
+    var show_pop = false
+    pop.clear()
+    if not pop.is_connected("id_pressed", self, "_on_pop_id_pressed"):
+        pop.connect("id_pressed", self, "_on_pop_id_pressed")
+        
+    for _url in saved_request_info.url_history:
+        if url.text in _url:
+            show_pop = true
+            pop.add_item(_url)
+
+                
+    pop.visible = show_pop
+    pop.rect_size = url.rect_size
+    pop.rect_global_position = url.rect_global_position+Vector2(0, url.rect_size.y)
+
+func _on_pop_id_pressed(id):
+    var pop = url_history.get_popup()
+    url.text = pop.get_item_text(id)
